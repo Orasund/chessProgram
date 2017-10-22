@@ -1,0 +1,134 @@
+/**************************
+ * chess programming - unit1
+ * 
+ * stephan.heuristiclab.com/lectures/2017/chess
+ * 
+ * creating a new project:
+ *   in ecplise -> new project
+ *   right click on folder -> new Class
+ *                         -> public static void main
+ ************************** */
+
+// points on the board will be represented as [col][row]
+//
+// 7               y   y = [7][7]
+// 6
+// 5
+// 4
+// 3
+// 2
+// 1 
+// 0   x               x = [1][0]
+//   0 1 2 3 4 5 6 7
+//
+// Ideal: one may use one array
+//
+
+private short[][] figures
+private void Reset(){
+  figures[0][0]=Figure.ROOK + Figure.WHITE_OFFSET; // a number
+  figures[0][1]=Figure.WHITE_OFFSET;  //  a offset number like =1
+  //...
+  
+  figures[0][7]=Figure.ROOK+Figure.BLACK_OFFSET;
+  whiteCanCastleQueenSide=true; //Private
+  whiteCanCastleKingSide = true; //Private
+  blackCanCastleQueenSide = True;
+  blackCanCastleKingSide = true;
+  history = new ArrayList<Moves>();
+}
+
+private class Move{
+  private short color;
+  private short type;
+  private short sourceCol;
+  private short sourceRow;
+  private short destCol;
+  private short destRow;
+  private bool isHit;
+  private short newType; //maybe sometimes useless, give it a default value for now
+  //constructor, get //set is not needed
+
+  /*****************************
+   * String s = figure.toString();
+   *
+   * returns the String-representation
+   ***************************** */
+  public String toString()
+  {
+    if(type = Figure.KING && sourceCol == 4 && destCol == 6)
+      return "0-0"; //small castle
+    if(type = Figure.KING && sourceCol == 4 && destCol == 2)
+      return "0-0-0"; //big castle
+
+    String s = Figure.toString(type);
+    s += ('a'+sourceCol)+(sourceRow+1);
+    s += isHit?"x":"-";
+    s += ('a'+destCol)+(destRow+1);
+    if(new Type >= 0)
+    {
+      s += Figure.toString(new Type());
+    }
+    return s;
+  }
+}
+
+class board
+{
+  public String toString(); //on the console
+  public bool execute_move(Move m) //dont validate!
+  {
+    short fig = figures[move.getsourceCol()][move.getdestRow()];
+    figures[move.getDestCol()][move.getDestRow()] = fig;
+    figures[move.getSourceCol()][move.getSourceRow()] = 0;
+    //TODO
+    //castleing
+    //promoting
+    //add to history   History.add(m);
+    //En Passant
+    //and more... like setting canCastle to false
+  }
+}
+
+/*
+//this is about constructors
+
+move input
+class Move
+{
+  //version 1:
+  public Move(Sting s){}
+  
+  //version 2:
+  public static Move import(String s){}
+
+  //version 3:
+  public void import(String s){}
+}
+*/
+
+public static void main()
+{
+  board b = new Board();
+  System.out.println(b.toString());
+  Move m = new Move("e2-e4");
+  b.executeMove(m);
+  System.out.println(b.toString());
+}
+
+/*******************************
+ * HOMEWORK
+ * isMate -> look if King is alive
+ * getValidMove -> dont implement jet
+ * cloning -> clone board but not history
+ *
+ * Next time, return source code + Test
+ *   printed, 2 per Page
+ *   make prober Tests
+ ******************************* */
+
+/******************************
+ * GRADING
+ * Test + Presetation 50%
+ * VO - exam 50%
+ ****************************** */
