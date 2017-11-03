@@ -1,6 +1,7 @@
 package chessProgram;
 
-//TODO:not yet ready
+import java.util.ArrayList;
+
 public class Move
 {
   private Color color;
@@ -15,7 +16,7 @@ public class Move
   /*****************************
    * Constructor
    ***************************** */
-  public Move(String s)
+  public Move(String s,Board b)
   {
     //spliting
     //we need to split the string into the "Source" and the "Destination" part.
@@ -23,13 +24,13 @@ public class Move
     
     //isHit?
     String[] parts = s.split("-");
-    if(parts.length==0)
-      isHit = true;
-    else
+    if(parts.length==1)
     {
-      isHit = false;
+      isHit = true;
       parts = s.split("x");
     }
+    else
+      isHit = false;
     
     //castle?
     if(parts[0].length()==1)
@@ -37,8 +38,32 @@ public class Move
       //this is actually a castle
       type = Figure.KING;
       sourceCol = 4;
-      //TODO:Color Black?
-      //TODO:Finish this part!!!
+      color = b.currentColor();
+      if(color == Color.WHITE)
+      {
+        sourceRow = 0;
+        destRow = 0;
+      }
+      else
+      {
+        sourceRow = 7;
+        destRow = 7;
+      }
+      
+      //big or small castle?
+      if(parts.length == 2)
+      {
+        //small
+        destCol = 6;
+      }
+      else
+      {
+        //big
+        destCol = 2;
+      }
+      
+      newType=0;
+      isHit=false;
       return;
     }
     
@@ -46,7 +71,7 @@ public class Move
     if(parts[0].length()==3)
     {
       type = (short)(parts[0].charAt(0));
-      parts[0] = parts[0].substring(1,2);
+      parts[0] = parts[0].substring(1,3);
     }
     else
       type = Figure.PAWN;
@@ -60,15 +85,18 @@ public class Move
     if(parts[1].length()==3)
     {
       newType = (short)(parts[1].charAt(2));
-      parts[0] = parts[0].substring(0,1);
+      parts[0] = parts[0].substring(0,2);
     }
     else
-      newType = 0;
+      newType = 0; //default
     
     //dest
     coords = Board.StringToCoords(parts[1]);
     destCol = coords[0];
     destRow = coords[1];
+    
+    //color
+    color = Figure.colorOf(b.getFigure(sourceCol, sourceRow));
   }
   
   /*****************************
@@ -88,15 +116,16 @@ public class Move
 
   /*****************************
    * String s = figure.toString();
-   *
    * returns the String-representation
    ***************************** */
   public String toString()
   {
-    if(type == Figure.KING && sourceCol == 4 && destCol == 6)
+    int c = isCastle();
+    if(c==1)
       return "0-0"; //small castle
-    if(type == Figure.KING && sourceCol == 4 && destCol == 2)
+    if(c==2)
       return "0-0-0"; //big castle
+      
     
     String s;
     //pawn must have an intern representation for the display of our board,
@@ -114,6 +143,58 @@ public class Move
       s += Figure.toString(newType);
     }
     return s;
+  }
+  
+  /*****************************
+   * m.equals(m2);
+   * returns the String-representation
+   ***************************** */
+  public boolean equals(Move move)
+  {
+    return 
+      color == move.color && type == move.type && sourceCol == move.sourceCol
+      && sourceRow == move.sourceRow && destCol == move.destCol &&  destRow == move.destRow
+      && isHit == move.isHit && newType == move.newType;
+  }
+  
+  /*****************************
+   * MovesListIncludesMove(moves,move)
+   * returns if moves contains move
+   ***************************** */
+  //TODO:PLs delete in exercise3, this function is not efficient.
+  public static Boolean MovesListIncludesMove(ArrayList<Move> moves, Move move)
+  {
+    return moves.contains(move);
+  }
+  
+  public int isCastle()
+  {
+    if(type != Figure.KING || sourceCol != 4)
+      return 0;
+    
+    if(destCol == 6)
+    {
+      return 1;
+    }
+    else if(destCol == 2)
+    {
+      return 2;
+    }
+    else
+      return 0;
+  }
+  
+  /*****************************
+   * Setters
+   *****************************/
+  public void setColor(Color color_)
+  {
+    color = color_;
+  }
+  
+  public void setHit(boolean hit)
+  {
+    isHit = hit;
   }
   
   /*****************************
