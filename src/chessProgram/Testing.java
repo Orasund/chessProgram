@@ -5,7 +5,7 @@ public class Testing
   public static void BoardNewMove(String s,Board b)
   {
     System.out.println('('+s+')');
-    b.execute_move(new Move(s,b));
+    b.executeMove(new Move(s,b));
   }
   public static void BoardDebug(Board b)
   {
@@ -25,7 +25,7 @@ public class Testing
     System.out.println("Board b = new Board();");
     BoardDebug(b);
     
-    b.execute_move(new Move("g2-g4",b));
+    b.executeMove(new Move("g2-g4",b));
     System.out.println("b.execute_move(new Move(\"g2-g4\",b));");
     BoardDebug(b);
     
@@ -165,5 +165,21 @@ public class Testing
       +Figure.colorOf((short)(Figure.ROOK+Figure.BLACK_OFFSET))
     );
     System.out.println("END testing Figure...");
+  }
+  
+  /*****************************
+   * Testing.PlayerClass();
+   * tests the Player Class.
+   ***************************** */
+  public static void PlayerClass()
+  {
+    System.out.println("************************");
+    System.out.println("START testing Player Classes...");
+    Player p1 = new HumanPlayer();
+    Player p2 = new RandomPlayer();
+    long seed = 845823893;
+    int MAX_TIME = 6000;
+    Game.runningGame(p1, p2, seed, MAX_TIME);
+    System.out.println("END testing Player Classes...");
   }
 }

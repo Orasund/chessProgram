@@ -46,6 +46,12 @@ public class Board
     blackCanCastleQueenSide = board.getBlackCanCastleQueenSide();
     blackCanCastleKingSide = board.getBlackCanCastleKingSide();
     history = new ArrayList<Move>();
+    ArrayList<Move> old_history = board.getHistory();
+    int n = old_history.size();
+    if(n>=2)
+      history.add(old_history.get(n-1-1));
+    if(n>=1)
+      history.add(old_history.get(n-1));
   }
 
   /*****************************
@@ -89,7 +95,7 @@ public class Board
       }
     
     //reset all parameters
-	whiteCanCastleQueenSide=true; //Private
+	whiteCanCastleQueenSide = true; //Private
 	whiteCanCastleKingSide = true; //Private
 	blackCanCastleQueenSide = true;
 	blackCanCastleKingSide = true;
@@ -105,18 +111,22 @@ public class Board
     return new Board(this);
   }
   
-  //TODO
-  public ArrayList<Move> getValidMoves()
+  public ArrayList<Move> getValidMoves(Color color)
   {
-    //TODO
-    return new ArrayList<Move>();
-  }
-  
-  //TODO
-  public ArrayList<Move> getValidMoves(int color)
-  {
-    //TODO
-    return new ArrayList<Move>();
+    ArrayList<Move> moves = new ArrayList<Move>();
+    if(isMat()==true)
+      return moves;
+          
+    for(int i = 0; i<figures.length; i++)
+      for(int j = 0; j<figures.length; j++)
+      {
+        short f = figures[i][j];
+        if(f == 0)
+          continue;
+        if(Figure.colorOf(f)==color)
+          moves.addAll(Figure.getValidMoves(this,(short)i,(short)j));
+      }
+    return moves;
   }
   
   /*****************************
@@ -133,7 +143,7 @@ public class Board
    * ArrayList<Move> history = getHistory();
    * returns a clone of the history
    ***************************** */
-  public boolean execute_move(Move move) //dont validate!
+  public boolean executeMove(Move move) //dont validate!
   {
     history.add(move);
     
@@ -156,17 +166,18 @@ public class Board
     int isCastle = move.isCastle();
     if(isCastle != 0)
     {
-      figures[move.getDestCol()][move.getDestRow()] = Figure.KING;
+      short offset = (move.getColor()==Color.WHITE) ? Figure.WHITE_OFFSET:Figure.BLACK_OFFSET;
+      figures[move.getDestCol()][move.getDestRow()] = (short)(Figure.KING+offset);
       figures[move.getSourceCol()][move.getSourceRow()] = 0;
       
       if(isCastle ==  1)
       {
-        figures[5][move.getDestRow()] = Figure.ROOK;
+        figures[5][move.getDestRow()] = (short)(Figure.ROOK+offset);
         figures[7][move.getDestRow()] = 0;
       }
       else //if(isCastle == 2)
       {
-        figures[3][move.getDestRow()] = Figure.ROOK;
+        figures[3][move.getDestRow()] = (short)(Figure.ROOK+offset);
         figures[0][move.getDestRow()] = 0;
       }
       return true;
@@ -232,16 +243,42 @@ public class Board
   }
   
   /*****************************
+   * Boolean mat = isMat();
+   * returns if a player has lost
+   ***************************** */
+  public boolean isMat()
+  {
+    for(int i = 0; i<8; i++)
+      for(int j = 0; j<8; j++)
+      {
+        if(Figure.typeOf(figures[i][j])==Figure.KING)
+          return false;
+      }
+    
+    return true;
+  }
+  
+  /*****************************
    * Boolean whiteHasLost = isMat(Color.WHITE);
    * returns if the color has its King
    ***************************** */
   public boolean isMat(Color color)
   {
-  //TODO: if cloneIncomplete is used, this function gets useless!!!!
-    if(history.size()==0)
-      return false;
-    Move last = history.get(history.size()-1);
-    return (last.getIsHit() && last.getType() == Figure.KING);
+    if(color == Color.WHITE)
+      for(int i = 0; i<8; i++)
+        for(int j = 0; j<8; j++)
+        {
+          if(Figure.typeOf(figures[i][j])==Figure.KING && Figure.colorOf(figures[i][j])==color)
+            return false;
+        }
+    else
+      for(int i = 7; i>=0; i--)
+        for(int j = 7; j>=0; j--)
+        {
+          if(Figure.typeOf(figures[i][j])==Figure.KING && Figure.colorOf(figures[i][j])==color)
+            return false;
+        }
+    return true;
   }
   
   /*****************************
@@ -250,7 +287,7 @@ public class Board
    ***************************** */
   public String toString() //on the console
   {
-    String out = "  -------------------------------";
+    String out = "  -------------------------------   waiting for:"+currentColor();
     out += '\n';
     for(int i=7; i>=0; i--)
     {
@@ -278,7 +315,6 @@ public class Board
    ***************************** */
   public Color currentColor()
   {
-    //TODO: if cloneIncomplete is used, this function gets useless!!!!
     if(history.size()==0)
       return Color.WHITE;
     

@@ -161,10 +161,13 @@ public class Move
    * MovesListIncludesMove(moves,move)
    * returns if moves contains move
    ***************************** */
-  //TODO:PLs delete in exercise3, this function is not efficient.
+  //TODO:Pls delete in exercise3, if still not used.
   public static Boolean MovesListIncludesMove(ArrayList<Move> moves, Move move)
   {
-    return moves.contains(move);
+    for(int i = 0; i < moves.size(); i++)
+      if(moves.get(i).equals(move))
+        return true;
+    return false;
   }
   
   public int isCastle()
