@@ -12,7 +12,7 @@ import java.util.ArrayList;
 //2
 //1 
 //0   x               x = [1][0]
-//0 1 2 3 4 5 6 7
+//  0 1 2 3 4 5 6 7
 //
 //Ideal: one may use one array
 
@@ -111,7 +111,7 @@ public class Board
     return new Board(this);
   }
   
-  public ArrayList<Move> getValidMoves(Color color)
+  public ArrayList<Move> getValidMoves(BlackWhite color)
   {
     ArrayList<Move> moves = new ArrayList<Move>();
     if(isMat()==true)
@@ -150,7 +150,7 @@ public class Board
     //king moved -> can't Castle
     if(move.getType() == Figure.KING)
     {
-      if(move.getColor()==Color.WHITE)
+      if(move.getColor()==BlackWhite.WHITE)
       {
         whiteCanCastleQueenSide = false;
         whiteCanCastleKingSide = false;
@@ -166,7 +166,7 @@ public class Board
     int isCastle = move.isCastle();
     if(isCastle != 0)
     {
-      short offset = (move.getColor()==Color.WHITE) ? Figure.WHITE_OFFSET:Figure.BLACK_OFFSET;
+      short offset = (move.getColor()==BlackWhite.WHITE) ? Figure.WHITE_OFFSET:Figure.BLACK_OFFSET;
       figures[move.getDestCol()][move.getDestRow()] = (short)(Figure.KING+offset);
       figures[move.getSourceCol()][move.getSourceRow()] = 0;
       
@@ -188,7 +188,7 @@ public class Board
     short newType = move.getNewType();
     if(move.getNewType()!=0) //promoting
     {
-      if(move.getColor()==Color.WHITE)
+      if(move.getColor()==BlackWhite.WHITE)
         fig = newType;
       else
         fig = (short)(newType+Figure.BLACK_OFFSET);
@@ -206,7 +206,7 @@ public class Board
     //Rook moves -> cant castle
     if(move.getType() == Figure.ROOK)
     {
-      if(move.getColor()==Color.WHITE)
+      if(move.getColor()==BlackWhite.WHITE)
       {
         if(move.getSourceCol() == 0)
           whiteCanCastleQueenSide = false;
@@ -262,9 +262,9 @@ public class Board
    * Boolean whiteHasLost = isMat(Color.WHITE);
    * returns if the color has its King
    ***************************** */
-  public boolean isMat(Color color)
+  public boolean isMat(BlackWhite color)
   {
-    if(color == Color.WHITE)
+    if(color == BlackWhite.WHITE)
       for(int i = 0; i<8; i++)
         for(int j = 0; j<8; j++)
         {
@@ -313,10 +313,10 @@ public class Board
    * Color c = currentColor();
    * returns the color of the next move
    ***************************** */
-  public Color currentColor()
+  public BlackWhite currentColor()
   {
     if(history.size()==0)
-      return Color.WHITE;
+      return BlackWhite.WHITE;
     
     Move last = history.get(history.size()-1);
     return FlipColor(last.getColor());
@@ -379,20 +379,20 @@ public class Board
    * black = Board.FlipColor(Color.WHITE);
    * flips a color
    ***************************** */
-  public static Color FlipColor(Color color)
+  public static BlackWhite FlipColor(BlackWhite color)
   {
-    if(color == Color.WHITE)
-      return Color.BLACK;
-    return Color.WHITE;
+    if(color == BlackWhite.WHITE)
+      return BlackWhite.BLACK;
+    return BlackWhite.WHITE;
   }
   
   /*****************************
    * String w = ColorToString(Color.White)
    * returns "w" or "b"
    ***************************** */
-  public static String ColorToString(Color color)
+  public static String ColorToString(BlackWhite color)
   {
-    if(color == Color.WHITE)
+    if(color == BlackWhite.WHITE)
       return "w";
     return "b";
   }

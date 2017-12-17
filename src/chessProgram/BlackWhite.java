@@ -1,5 +1,5 @@
 package chessProgram;
 
-public enum Color {
+public enum BlackWhite {
   WHITE,BLACK
 }

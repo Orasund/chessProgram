@@ -7,14 +7,14 @@ class Thinker implements Runnable
   
     Player player;
     Board b;
-    Color color;
+    BlackWhite color;
     Move best_move;
     java.util.Random random;
     
     /*****************************
      * Constructor
      ***************************** */
-    Thinker(Board b_,Color color_,Player player_, java.util.Random random_)
+    Thinker(Board b_,BlackWhite color_,Player player_, java.util.Random random_)
     {
       b = b_;
       color = color_;
@@ -28,25 +28,29 @@ class Thinker implements Runnable
      ***************************** */
     public void run()
     {
-      int level = 1;
+      int level = 3;//1;
       while(true)
       {
           ArrayList<Move> moves = b.getValidMoves(color);
           int n = moves.size();
-          Move temp_best_move = null;
+          ArrayList<Move> temp_best_moves = new ArrayList<Move>();
           double best_fitness = 0;
           for(int i = 0; i< n; i++)
           {
               Board temp = b.cloneIncompletely();//corrent information+previous move
               temp.executeMove(moves.get(i));
-              double q = evaluate(temp,Board.FlipColor(color), level-1); //apponant color
-              if(i == 0 || q>best_fitness || (q == best_fitness && random.nextInt(2)==0))
+              double q = evaluate(temp,Board.FlipColor(color), level-1,0); //apponant color
+              if(i == 0 || q>best_fitness)
               {
-                temp_best_move = moves.get(i);
+                temp_best_moves = new ArrayList<Move>();
+                temp_best_moves.add(moves.get(i));
                 best_fitness = q;
               }
+              else if(q == best_fitness)
+                temp_best_moves.add(moves.get(i));
           }
-          best_move = temp_best_move;
+        
+          best_move = temp_best_moves.get(random.nextInt(temp_best_moves.size()));
           System.out.println("level:"+level+", fit:"+best_fitness);
           level++;
       }
@@ -56,7 +60,7 @@ class Thinker implements Runnable
      * double fitness = evaluate(b, color,level);
      * evaluates (recursively) the state of the board
      ***************************** */
-    private double evaluate(Board b, Color color, int level)
+    private double evaluate(Board b, BlackWhite color, int level, double current_min)
     {
         if(level==0)
         {
@@ -73,10 +77,13 @@ class Thinker implements Runnable
             {
                 Board temp = b.cloneIncompletely();
                 temp.executeMove(moves.get(i));
-                double d = evaluate(temp,Board.FlipColor(color), level-1);
-                if(i == 0)
+                double d = evaluate(temp,Board.FlipColor(color), level-1,min);
+                if(current_min>d) //alpha-beta-search
+                {
                   min = d;
-                else if(d < min)
+                  break;
+                }
+                if(d < min || i == 0)
                   min=d;
             }
             return -min;

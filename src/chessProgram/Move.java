@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Move
 {
-  private Color color;
+  private BlackWhite color;
   private short type;
   private int sourceCol;
   private int sourceRow;
@@ -39,7 +39,7 @@ public class Move
       type = Figure.KING;
       sourceCol = 4;
       color = b.currentColor();
-      if(color == Color.WHITE)
+      if(color == BlackWhite.WHITE)
       {
         sourceRow = 0;
         destRow = 0;
@@ -102,7 +102,7 @@ public class Move
   /*****************************
    * Copy-Constructor
    ***************************** */
-  public Move(Color color_, short type_, short sourceCol_, short sourceRow_, short destCol_, short destRow_, boolean isHit_, short newType_)
+  public Move(BlackWhite color_, short type_, short sourceCol_, short sourceRow_, short destCol_, short destRow_, boolean isHit_, short newType_)
   {
     color = color_;
     type = type_;
@@ -190,7 +190,7 @@ public class Move
   /*****************************
    * Setters
    *****************************/
-  public void setColor(Color color_)
+  public void setColor(BlackWhite color_)
   {
     color = color_;
   }
@@ -203,7 +203,7 @@ public class Move
   /*****************************
    * Getters
    ***************************** */
-  public Color getColor()
+  public BlackWhite getColor()
   {
     return color;
   }

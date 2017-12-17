@@ -31,9 +31,9 @@ public class Figure
    * String s = Figure.toString(BLACK,type);
    * returns the String-representation of a Figure
    ***************************** */
-  public static String toString(Color color, short type)
+  public static String toString(BlackWhite color, short type)
   {
-    if(color == Color.BLACK)
+    if(color == BlackWhite.BLACK)
       return toString((short)(type+BLACK_OFFSET));
     return toString(type);
   }
@@ -57,119 +57,113 @@ public class Figure
     ArrayList<Move> moves = new ArrayList<Move>();
     short figureIndex = board.getFigure(col,row);
     short figure_type = typeOf(figureIndex);
-    Color figure_color = Figure.colorOf(figureIndex);
+    BlackWhite figure_color = Figure.colorOf(figureIndex);
     short temp_col;
     short temp_row;
     if (figureIndex != 0)
     {
       if (figure_type == PAWN)
       {
-        if(figure_color == Color.WHITE)
+        temp_row = (figure_color == BlackWhite.WHITE) ? (short)(row+1) : (short)(row-1);
+        
+        if(
+          ((figure_color == BlackWhite.WHITE && temp_row <= 7)
+            || (figure_color == BlackWhite.BLACK && temp_row >= 0)
+          )
+          && board.getFigure(col,temp_row) == 0
+        )
         {
-          if(figure_color == Color.WHITE)
-            temp_row = (short)(row+1);
-          else
-            temp_row = (short)(row-1);
-          
+          // X
+          // o
           if(
-            ((figure_color == Color.WHITE && temp_row <= 7)
-              || (figure_color == Color.BLACK && temp_row >= 0)
-            )
-            && board.getFigure(col,temp_row) == 0
+            (figure_color == BlackWhite.WHITE && temp_row ==7)
+            || (figure_color == BlackWhite.BLACK && temp_row ==0)
           )
           {
-            // X
-            // o
-            if(
-              (figure_color == Color.WHITE && temp_row ==7)
-              || (figure_color == Color.BLACK && temp_row ==0)
+            //add moves with promotion! queen, knight, bishop, rook
+            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.BISHOP));
+            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.KNIGHT));
+            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.QUEEN));
+            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.ROOK));
+          }
+          else
+            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,(short)0));
+          
+          // X
+          // |
+          // o
+          if(figure_color == BlackWhite.WHITE)
+            temp_row = (short)(row+2);
+          else
+            temp_row = (short)(row-2);
+          if(
+            (
+              (figure_color == BlackWhite.WHITE && row==1)
+              || (figure_color == BlackWhite.BLACK && row==6)
             )
+            && board.getFigure(col, temp_row)==0
+          )
+             moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,(short)0));
+        }  
+        // X
+        //   o
+        int[][] pos;
+        if(figure_color == BlackWhite.WHITE)
+          pos = new int[][]{{-1,1},{1,1}};
+        else
+          pos = new int[][]{{-1,-1},{1,-1}};
+          
+        for(int i = 0; i<2; i++)
+        {
+          temp_col = (short)(col+pos[i][0]);
+          temp_row = (short)(row+pos[i][1]);
+          if(temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8)
+            continue;
+          
+          if(board.getFigure(temp_col, temp_row) != 0)
+          {
+            if(isValidDestination(board,figure_color,temp_col,temp_row))
             {
-              //add moves with promotion! queen, knight, bishop, rook
-              moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.BISHOP));
-              moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.KNIGHT));
-              moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.QUEEN));
-              moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.ROOK));
+              if(
+                (figure_color == BlackWhite.WHITE && temp_row ==7)
+                || (figure_color == BlackWhite.BLACK && temp_row ==0)
+              )
+              {
+                //add moves with promotion! queen, knight, bishop, rook
+                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.BISHOP));
+                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.KNIGHT));
+                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.QUEEN));
+                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.ROOK));
+              }
+              else
+                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,(short)0));
             }
-            else
-              moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,(short)0));
-            
-            // X
-            // |
-            // o
-            if(figure_color == Color.WHITE)
+              
+          }
+          else
+          {
+            //
+            //   *
+            //   X
+            // o .
+            if(figure_color == BlackWhite.WHITE)
               temp_row = (short)(row+2);
             else
               temp_row = (short)(row-2);
-            if(
-              (
-                (figure_color == Color.WHITE && row==1)
-                || (figure_color == Color.BLACK && row==6)
+            ArrayList<Move> history = board.getHistory();
+            if(history.size()>0)
+            {
+              Move lastMove = history.get(history.size()-1);
+              if(
+                lastMove.getType() == Figure.PAWN
+                && lastMove.getSourceCol() == temp_col
+                && lastMove.getSourceRow() == temp_row
+                && lastMove.getDestCol() == temp_col
+                && lastMove.getDestRow() == row
               )
-              && board.getFigure(col, temp_row)==0
-            )
-               moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,(short)0));
-          }  
-          // X
-          //   o
-          int[][] pos;
-          if(figure_color == Color.WHITE)
-            pos = new int[][]{{-1,1},{1,1}};
-          else
-            pos = new int[][]{{-1,-1},{1,-1}};
-            
-          for(int i = 0; i<2; i++)
-          {
-            temp_col = (short)(col+pos[i][0]);
-            temp_row = (short)(row+pos[i][1]);
-            if(temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8)
-              continue;
-            
-            if(board.getFigure(temp_col, temp_row) != 0)
-            {
-              if(isValidDestination(board,figure_color,temp_col,temp_row))
-              {
-                if(
-                  (figure_color == Color.WHITE && temp_row ==7)
-                  || (figure_color == Color.BLACK && temp_row ==0)
-                )
-                {
-                  //add moves with promotion! queen, knight, bishop, rook
-                  moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.BISHOP));
-                  moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.KNIGHT));
-                  moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.QUEEN));
-                  moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.ROOK));
-                }
-                else
-                  moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,(short)0));
-              }
-                
+                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,(short)0));
             }
-            else
-            {
-              //
-              //   *
-              //   X
-              // o .
-              if(figure_color == Color.WHITE)
-                temp_row = (short)(row+2);
-              else
-                temp_row = (short)(row-2);
-              ArrayList<Move> history = board.getHistory();
-              if(history.size()>0)
-              {
-                Move lastMove = history.get(history.size()-1);
-                if(
-                  lastMove.getType() == Figure.PAWN
-                  && lastMove.getSourceCol() == temp_col
-                  && lastMove.getSourceRow() == temp_row
-                  && lastMove.getDestCol() == temp_col
-                  && lastMove.getDestRow() == row
-                )
-                  moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,(short)0));
-              }
-            }
-          }   
+          }
         }
       }
       if (figure_type == ROOK || figure_type == QUEEN)
@@ -279,22 +273,43 @@ public class Figure
         }
         
         /*** Castle ***/
-        if(!canBeHit(board, col,row, figure_color))
+        if(figure_color == BlackWhite.WHITE)
         {
-          if(figure_color == Color.WHITE)
-          {
-            if(board.getWhiteCanCastleQueenSide() && board.getFigure(1, 0) == 0 && board.getFigure(2, 0) == 0 && board.getFigure(3, 0) == 0 && Figure.typeOf(board.getFigure(0, 0)) == Figure.ROOK)
-              moves.add(new Move("0-0-0",board));
-            else if(board.getWhiteCanCastleKingSide() && board.getFigure(5, 0) == 0 && board.getFigure(6, 0) == 0 && Figure.typeOf(board.getFigure(7, 0)) == Figure.ROOK)
-              moves.add(new Move("0-0",board));
-          }
-          else
-          {
-            if(board.getBlackCanCastleQueenSide() && board.getFigure(1, 7) == 0 && board.getFigure(2, 7) == 0 && board.getFigure(3, 7) == 0 && Figure.typeOf(board.getFigure(0, 7)) == Figure.ROOK)
-              moves.add(new Move("0-0-0",board));
-            else if(board.getBlackCanCastleKingSide() && board.getFigure(5, 7) == 0 && board.getFigure(6, 7) == 0 && Figure.typeOf(board.getFigure(7, 7)) == Figure.ROOK)
-              moves.add(new Move("0-0",board));
-          }
+          if(
+            board.getWhiteCanCastleQueenSide()
+            && board.getFigure(1, 0) == 0 && board.getFigure(2, 0) == 0
+            && board.getFigure(3, 0) == 0 && Figure.typeOf(board.getFigure(0, 0)) == Figure.ROOK
+            && !canBeHit(board, 4,0, figure_color) && !canBeHit(board, 3,0, figure_color)
+            && !canBeHit(board, 2,0, figure_color)
+          )
+            moves.add(new Move("0-0-0",board));
+          if(
+            board.getWhiteCanCastleKingSide()
+            && board.getFigure(5, 0) == 0 && board.getFigure(6, 0) == 0
+            && Figure.typeOf(board.getFigure(7, 0)) == Figure.ROOK
+            && !canBeHit(board, 4,0, figure_color) && !canBeHit(board, 5,0, figure_color)
+            && !canBeHit(board, 6,0, figure_color)
+          )
+            moves.add(new Move("0-0",board));
+        }
+        else
+        {
+          if(
+            board.getBlackCanCastleQueenSide()
+            && board.getFigure(1, 7) == 0 && board.getFigure(2, 7) == 0
+            && board.getFigure(3, 7) == 0 && Figure.typeOf(board.getFigure(0, 7)) == Figure.ROOK
+            && !canBeHit(board, 4,7, figure_color) && !canBeHit(board, 3,7, figure_color)
+            && !canBeHit(board, 2,7, figure_color)
+          )
+            moves.add(new Move("0-0-0",board));
+          if(
+            board.getBlackCanCastleKingSide()
+            && board.getFigure(5, 7) == 0 && board.getFigure(6, 7) == 0
+            && Figure.typeOf(board.getFigure(7, 7)) == Figure.ROOK
+            && !canBeHit(board, 4,7, figure_color) && !canBeHit(board, 5,7, figure_color)
+            && !canBeHit(board, 6,7, figure_color)
+          )
+            moves.add(new Move("0-0",board));
         }
       }
     }
@@ -305,7 +320,7 @@ public class Figure
    * boolean b = canBeHit(b,col,row,c)
    * returns if an enemy can hit this spot
    ***************************** */
-  private static boolean canBeHit(Board b, int col, int row, Color c)
+  private static boolean canBeHit(Board b, int col, int row, BlackWhite c)
   {
     for(int i = 0; i < 8; i++)
       for(int j = 0; j<8; j++)
@@ -314,7 +329,7 @@ public class Figure
         if(fig == 0)
           continue;
         
-        Color color = colorOf(fig);
+        BlackWhite color = colorOf(fig);
         if(color == c)
           continue;
         
@@ -341,7 +356,7 @@ public class Figure
    * isValidDestination(b,color,0,0)
    * returns if the pot is free or occupied by an enemy
    ***************************** */
-  private static boolean isValidDestination(Board board, Color color, int col, int row)
+  private static boolean isValidDestination(Board board, BlackWhite color, int col, int row)
   {
     short fig = board.getFigure(col,row);
     return fig==0 || Figure.colorOf(fig)!=color;
@@ -351,11 +366,11 @@ public class Figure
    * Color black = colorOf(Figure.PAWN+Figure.BLACK_OFFSET);
    * returns the color of a Figure
    ***************************** */
-  public static Color colorOf(short figure)
+  public static BlackWhite colorOf(short figure)
   {
     if(figure >='A'+BLACK_OFFSET)
-      return Color.BLACK;
-    return Color.WHITE;
+      return BlackWhite.BLACK;
+    return BlackWhite.WHITE;
   }
   
   /*****************************
@@ -364,7 +379,7 @@ public class Figure
    ***************************** */
   public static short typeOf(short figure)
   {
-    if(colorOf(figure)==Color.BLACK)
+    if(colorOf(figure)==BlackWhite.BLACK)
       return (short)(figure - BLACK_OFFSET);
     return figure;
   }
@@ -373,9 +388,9 @@ public class Figure
    * int seven = relativeIndex(0, Color.WHITE);
    * returns the type of a Figure
    ***************************** */
-  public static int relativeIndex(int i, Color c)
+  public static int relativeIndex(int i, BlackWhite c)
   {
-    if(c == Color.WHITE)
+    if(c == BlackWhite.WHITE)
       return i;
     
     return 7-i;

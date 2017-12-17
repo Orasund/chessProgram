@@ -51,7 +51,7 @@ public class Testing
     System.out.println("Board b2 = b.cloneIncompletely();");
     Board b2 = b.cloneIncompletely();
     BoardDebug(b2);
-    System.out.println("b2.isMat(Color.BLACK)="+b2.isMat(Color.BLACK));
+    System.out.println("b2.isMat(Color.BLACK)="+b2.isMat(BlackWhite.BLACK));
     
     System.out.println("END testing Board...");
   }
