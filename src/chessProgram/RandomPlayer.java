@@ -1,6 +1,6 @@
 package chessProgram;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class RandomPlayer implements Player
 {
@@ -19,7 +19,7 @@ public class RandomPlayer implements Player
      ***************************** */
     public Move chooseMove(Board b,BlackWhite color,int milliseconds, java.util.Random random)
     {
-        ArrayList<Move> moves = b.getValidMoves(color);
+        LinkedList<Move> moves = b.getValidMoves(color);
         //break if no move is possible (throw exeption)
         if(moves.size()==0)
           throw new RuntimeException("no move to choose from");

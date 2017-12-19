@@ -20,6 +20,7 @@ public class Game
     
     System.out.println(board.toString());
     Move m;
+    
     while (!whiteMat && !blackMat && !remis && round < MAX_ROUNDS)
     {
       System.out.println("******** ROUND "+round+" ********");
@@ -66,11 +67,11 @@ public class Game
   public static void main(String[] args)
   {
     long seed = 234923454;//(new Date()).getTime();
-    Player whitePlayer = new HumanPlayerGUI();
-    Player blackPlayer = new MyPlayer();
-    //Player whitePlayer = new MyPlayer();
-    //Player blackPlayer = new HumanPlayerGUI();
-    int MAX_TIME = 500;
+    //Player whitePlayer = new HumanPlayerGUI();
+    //Player blackPlayer = new MyPlayer();
+    Player whitePlayer = new MyPlayer();
+    Player blackPlayer = new HumanPlayerGUI();
+    int MAX_TIME = 5000;//5000;
     runningGame(whitePlayer, blackPlayer, seed, MAX_TIME);
   }
 }

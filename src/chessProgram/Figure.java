@@ -1,6 +1,7 @@
 package chessProgram;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class Figure
 {
@@ -52,266 +53,239 @@ public class Figure
    * ArrayList<Move> moves = getValidMoves(b,col,row)
    * returns a list of all valid moves
    ***************************** */
-  public static ArrayList<Move> getValidMoves(Board board, short col, short row)
+  public static LinkedList<Move> getValidMoves(Board board, short col, short row)
   {
-    ArrayList<Move> moves = new ArrayList<Move>();
+    LinkedList<Move> moves = new LinkedList<Move>();
     short figureIndex = board.getFigure(col,row);
+    //if (figureIndex == 0)
+    //  return moves;
+    
     short figure_type = typeOf(figureIndex);
-    BlackWhite figure_color = Figure.colorOf(figureIndex);
+    BlackWhite figure_color = colorOf(figureIndex);
     short temp_col;
     short temp_row;
-    if (figureIndex != 0)
+    
+    if (figure_type == PAWN)
     {
-      if (figure_type == PAWN)
+      temp_row = (figure_color == BlackWhite.WHITE)?(short)(row+1):(short)(row-1);
+      if(
+        board.getFigure(col,temp_row) == 0
+        && ((figure_color == BlackWhite.WHITE)? temp_row <= 7 : temp_row >= 0)
+      )
       {
-        temp_row = (figure_color == BlackWhite.WHITE) ? (short)(row+1) : (short)(row-1);
-        
-        if(
-          ((figure_color == BlackWhite.WHITE && temp_row <= 7)
-            || (figure_color == BlackWhite.BLACK && temp_row >= 0)
-          )
-          && board.getFigure(col,temp_row) == 0
-        )
-        {
-          // X
-          // o
-          if(
-            (figure_color == BlackWhite.WHITE && temp_row ==7)
-            || (figure_color == BlackWhite.BLACK && temp_row ==0)
-          )
-          {
-            //add moves with promotion! queen, knight, bishop, rook
-            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.BISHOP));
-            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.KNIGHT));
-            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.QUEEN));
-            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,Figure.ROOK));
-          }
-          else
-            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,(short)0));
-          
-          // X
-          // |
-          // o
-          if(figure_color == BlackWhite.WHITE)
-            temp_row = (short)(row+2);
-          else
-            temp_row = (short)(row-2);
-          if(
-            (
-              (figure_color == BlackWhite.WHITE && row==1)
-              || (figure_color == BlackWhite.BLACK && row==6)
-            )
-            && board.getFigure(col, temp_row)==0
-          )
-             moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,(short)0));
-        }  
         // X
-        //   o
-        int[][] pos;
-        if(figure_color == BlackWhite.WHITE)
-          pos = new int[][]{{-1,1},{1,1}};
-        else
-          pos = new int[][]{{-1,-1},{1,-1}};
-          
-        for(int i = 0; i<2; i++)
+        // o
+        if((figure_color == BlackWhite.WHITE)? temp_row ==7 : temp_row ==0)
         {
-          temp_col = (short)(col+pos[i][0]);
-          temp_row = (short)(row+pos[i][1]);
-          if(temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8)
+          //add moves with promotion! queen, knight, bishop, rook
+          short[] figs = {Figure.BISHOP,Figure.KNIGHT,Figure.QUEEN,Figure.ROOK};
+          for(short fig:figs)
+            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,fig));
+        }
+        else
+          moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,(short)0));
+        
+        // X
+        // |
+        // o
+        if((figure_color == BlackWhite.WHITE)? row==1 : row==6)
+        {
+          temp_row = (figure_color == BlackWhite.WHITE)?(short)(row+2):(short)(row-2);
+          if(
+              board.getFigure(col, temp_row)==0
+          )
+            moves.add(new Move(figure_color,Figure.PAWN,col,row,col,temp_row,false,(short)0));
+        }
+      }
+      
+      // X
+      //   o
+      int[][] pos = (figure_color == BlackWhite.WHITE)?new int[][]{{-1,1},{1,1}}:new int[][]{{-1,-1},{1,-1}};
+      for(int i = 0; i<2; i++)
+      {
+        temp_col = (short)(col+pos[i][0]);
+        temp_row = (short)(row+pos[i][1]);
+        if(temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8)
+          continue;
+        
+        if(board.getFigure(temp_col, temp_row) != 0)
+        {
+          if(Figure.colorOf(board.getFigure(temp_col, temp_row))==figure_color)
             continue;
           
-          if(board.getFigure(temp_col, temp_row) != 0)
+          if((figure_color == BlackWhite.WHITE)? temp_row ==7 : temp_row ==0)
           {
-            if(isValidDestination(board,figure_color,temp_col,temp_row))
-            {
-              if(
-                (figure_color == BlackWhite.WHITE && temp_row ==7)
-                || (figure_color == BlackWhite.BLACK && temp_row ==0)
-              )
-              {
-                //add moves with promotion! queen, knight, bishop, rook
-                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.BISHOP));
-                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.KNIGHT));
-                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.QUEEN));
-                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,Figure.ROOK));
-              }
-              else
-                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,(short)0));
-            }
-              
+            short[] figs = {Figure.BISHOP,Figure.KNIGHT,Figure.QUEEN,Figure.ROOK};
+            for(short fig:figs)
+              moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,fig));
           }
           else
-          {
-            //
-            //   *
-            //   X
-            // o .
-            if(figure_color == BlackWhite.WHITE)
-              temp_row = (short)(row+2);
-            else
-              temp_row = (short)(row-2);
-            ArrayList<Move> history = board.getHistory();
-            if(history.size()>0)
-            {
-              Move lastMove = history.get(history.size()-1);
-              if(
-                lastMove.getType() == Figure.PAWN
-                && lastMove.getSourceCol() == temp_col
-                && lastMove.getSourceRow() == temp_row
-                && lastMove.getDestCol() == temp_col
-                && lastMove.getDestRow() == row
-              )
-                moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,(short)0));
-            }
-          }
-        }
-      }
-      if (figure_type == ROOK || figure_type == QUEEN)
-      {
-        //     X
-        //     X
-        // X X R X X
-        //     X
-        //     X
-        int[][] pos = {
-            {0,1},{0,-1},{1,0},{-1,0}
-        };
-        for(int i = 0; i<pos.length; i++)
-          for(int j = 1; true; j++)
-          {
-            temp_col = (short)(col+j*pos[i][0]);
-            temp_row = (short)(row+j*pos[i][1]);
-            if(temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8)
-              break;
-            
-            if(isValidDestination(board,figure_color,temp_col,temp_row))
-            {
-              boolean isHit = (board.getFigure(temp_col,temp_row) != 0);
-              moves.add(new Move(figure_color,figure_type,col,row,temp_col,temp_row,isHit,(short)0));
-              if(isHit)
-                break;
-            }
-            else
-              break;
-          }
-      }
-      if (figure_type == KNIGHT)
-      {
-        //   X   X
-        // X   |   X
-        //   - N -
-        // X   |   X
-        //   X   X
-        int[][] pos = {
-          {-1,2},{-2,1},{-1,-2},{-2,-1},{1,2},{2,1},{1,-2},{2,-1}
-        };
-        for(int i = 0; i <pos.length; i++)
-        {
-          temp_col = (short)(col+pos[i][0]);
-          temp_row = (short)(row+pos[i][1]);
-          if(temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8)
-            continue;
-          
-          if(isValidDestination(board,figure_color,temp_col,temp_row))
-          {
-            boolean isHit = (board.getFigure(temp_col, temp_row) != 0);
-            moves.add(new Move(figure_color,figure_type,col,row,temp_col,temp_row,isHit,(short)0));
-          }
-        }
-      }
-      if(figure_type == BISHOP || figure_type == QUEEN)
-      {
-        // X       X
-        //   X   X
-        //     B
-        //   X   X
-        // X       X
-        int[][] pos = {
-            {-1,1},{-1,-1},{1,1},{1,-1}
-        };
-        for(int i = 0; i<pos.length; i++)
-          for(int j = 1; true; j++)
-          {
-            temp_col = (short)(col+j*pos[i][0]);
-            temp_row = (short)(row+j*pos[i][1]);
-            if(temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8)
-              break;
-            
-            if(!isValidDestination(board,figure_color,temp_col,temp_row))
-              break;
-            
-            boolean isHit = (board.getFigure(temp_col,temp_row) != 0);
-            moves.add(new Move(figure_color,figure_type,col,row,temp_col,temp_row,isHit,(short)0));
-            if(isHit)
-              break;
-          }
-      }
-      if (figure_type == KING)
-      {
-        // 
-        //  X X X
-        //  X K X
-        //  X X X
-        //   
-        
-        /*** Normal moves ***/
-        int[][] pos = {
-            {-1,1},{-1,-1},{1,1},{1,-1},{0,1},{0,-1},{1,0},{-1,0}
-        };
-        for(int i = 0; i <pos.length; i++)
-        {
-          temp_col = (short)(col+pos[i][0]);
-          temp_row = (short)(row+pos[i][1]);
-          if(temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8)
-            continue;
-          
-          if(isValidDestination(board,figure_color,temp_col,temp_row))
-          {
-            boolean isHit = (board.getFigure(temp_col, temp_row) != 0);
-            moves.add(new Move(figure_color,figure_type,col,row,temp_col,temp_row,isHit,(short)0));
-          }
-        }
-        
-        /*** Castle ***/
-        if(figure_color == BlackWhite.WHITE)
-        {
-          if(
-            board.getWhiteCanCastleQueenSide()
-            && board.getFigure(1, 0) == 0 && board.getFigure(2, 0) == 0
-            && board.getFigure(3, 0) == 0 && Figure.typeOf(board.getFigure(0, 0)) == Figure.ROOK
-            && !canBeHit(board, 4,0, figure_color) && !canBeHit(board, 3,0, figure_color)
-            && !canBeHit(board, 2,0, figure_color)
-          )
-            moves.add(new Move("0-0-0",board));
-          if(
-            board.getWhiteCanCastleKingSide()
-            && board.getFigure(5, 0) == 0 && board.getFigure(6, 0) == 0
-            && Figure.typeOf(board.getFigure(7, 0)) == Figure.ROOK
-            && !canBeHit(board, 4,0, figure_color) && !canBeHit(board, 5,0, figure_color)
-            && !canBeHit(board, 6,0, figure_color)
-          )
-            moves.add(new Move("0-0",board));
+            moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,(short)0));
         }
         else
         {
+          //
+          //   *
+          //   X
+          // o .
+          //add moves with promotion! queen, knight, bishop, rook
+          int temp_row2 = (figure_color == BlackWhite.WHITE)?(short)(row+2):(short)(row-2);
+          ArrayList<Move> history = board.getHistory();
+          if(history.size()==0)
+            continue;
+          Move lastMove = history.get(history.size()-1);
           if(
-            board.getBlackCanCastleQueenSide()
-            && board.getFigure(1, 7) == 0 && board.getFigure(2, 7) == 0
-            && board.getFigure(3, 7) == 0 && Figure.typeOf(board.getFigure(0, 7)) == Figure.ROOK
-            && !canBeHit(board, 4,7, figure_color) && !canBeHit(board, 3,7, figure_color)
-            && !canBeHit(board, 2,7, figure_color)
+            lastMove.getType() == Figure.PAWN
+            && lastMove.getSourceCol() == temp_col
+            && lastMove.getSourceRow() == temp_row2
+            && lastMove.getDestCol() == temp_col
+            && lastMove.getDestRow() == row
           )
-            moves.add(new Move("0-0-0",board));
-          if(
-            board.getBlackCanCastleKingSide()
-            && board.getFigure(5, 7) == 0 && board.getFigure(6, 7) == 0
-            && Figure.typeOf(board.getFigure(7, 7)) == Figure.ROOK
-            && !canBeHit(board, 4,7, figure_color) && !canBeHit(board, 5,7, figure_color)
-            && !canBeHit(board, 6,7, figure_color)
-          )
-            moves.add(new Move("0-0",board));
+            moves.add(new Move(figure_color,Figure.PAWN,col,row,temp_col,temp_row,true,(short)0));
         }
       }
+    }
+    else if (figure_type == KNIGHT)
+    {
+      //   X   X
+      // X   |   X
+      //   - N -
+      // X   |   X
+      //   X   X
+      int[][] pos = {
+        {-1,2},{-2,1},{-1,-2},{-2,-1},{1,2},{2,1},{1,-2},{2,-1}
+      };
+      for(int i = 0; i <pos.length; i++)
+      {
+        temp_col = (short)(col+pos[i][0]);
+        temp_row = (short)(row+pos[i][1]);
+        if(
+          temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8
+          || !isValidDestination(board,figure_color,temp_col,temp_row)
+        )
+          continue;
+        
+        boolean isHit = (board.getFigure(temp_col, temp_row) != 0);
+        moves.add(new Move(figure_color,figure_type,col,row,temp_col,temp_row,isHit,(short)0));
+      }
+    }
+    else if (figure_type == KING)
+    {
+      // 
+      //  X X X
+      //  X K X
+      //  X X X
+      //  
+      /*** Normal moves ***/
+      int[][] pos = {
+          {-1,1},{-1,-1},{1,1},{1,-1},{0,1},{0,-1},{1,0},{-1,0}
+      };
+      for(int i = 0; i <pos.length; i++)
+      {
+        temp_col = (short)(col+pos[i][0]);
+        temp_row = (short)(row+pos[i][1]);
+        if(
+          temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8
+          || !isValidDestination(board,figure_color,temp_col,temp_row)
+        )
+          continue;
+        
+        boolean isHit = (board.getFigure(temp_col, temp_row) != 0);
+        moves.add(new Move(figure_color,figure_type,col,row,temp_col,temp_row,isHit,(short)0));
+      }
+      /*** Castle ***/
+      if(figure_color == BlackWhite.WHITE)
+      {
+        if(
+          board.getWhiteCanCastleQueenSide()
+          && board.getFigure(1, 0) == 0 && board.getFigure(2, 0) == 0
+          && board.getFigure(3, 0) == 0 && Figure.typeOf(board.getFigure(0, 0)) == Figure.ROOK
+          && !canBeHit(board, 4,0, figure_color) && !canBeHit(board, 3,0, figure_color)
+          && !canBeHit(board, 2,0, figure_color) && !canBeHit(board, 0,0, figure_color)
+        )
+          moves.add(new Move("0-0-0",board));
+        if(
+          board.getWhiteCanCastleKingSide()
+          && board.getFigure(5, 0) == 0 && board.getFigure(6, 0) == 0
+          && Figure.typeOf(board.getFigure(7, 0)) == Figure.ROOK
+          && !canBeHit(board, 4,0, figure_color) && !canBeHit(board, 5,0, figure_color)
+          && !canBeHit(board, 6,0, figure_color) && !canBeHit(board, 7,0, figure_color)
+        )
+          moves.add(new Move("0-0",board));
+      }
+      else
+      {
+        if(
+          board.getBlackCanCastleQueenSide()
+          && board.getFigure(1, 7) == 0 && board.getFigure(2, 7) == 0
+          && board.getFigure(3, 7) == 0 && Figure.typeOf(board.getFigure(0, 7)) == Figure.ROOK
+          && !canBeHit(board, 4,7, figure_color) && !canBeHit(board, 3,7, figure_color)
+          && !canBeHit(board, 2,7, figure_color) && !canBeHit(board, 0,7, figure_color)
+        )
+          moves.add(new Move("0-0-0",board));
+        if(
+          board.getBlackCanCastleKingSide()
+          && board.getFigure(5, 7) == 0 && board.getFigure(6, 7) == 0
+          && Figure.typeOf(board.getFigure(7, 7)) == Figure.ROOK
+          && !canBeHit(board, 4,7, figure_color) && !canBeHit(board, 5,7, figure_color)
+          && !canBeHit(board, 6,7, figure_color) && !canBeHit(board, 7,7, figure_color)
+        )
+          moves.add(new Move("0-0",board));
+      }
+    }
+    else if (figure_type == ROOK || figure_type == QUEEN)
+    {
+      //     X
+      //     X
+      // X X R X X
+      //     X
+      //     X
+      int[][] pos = {
+        {0,1},{0,-1},{1,0},{-1,0}
+      };
+      for(int i = 0; i<pos.length; i++)
+        for(int j = 1; true; j++)
+        {
+          temp_col = (short)(col+j*pos[i][0]);
+          temp_row = (short)(row+j*pos[i][1]);
+          if(
+            temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8
+            || !isValidDestination(board,figure_color,temp_col,temp_row)
+          )
+            break;
+          
+          boolean isHit = (board.getFigure(temp_col,temp_row) != 0);
+          moves.add(new Move(figure_color,figure_type,col,row,temp_col,temp_row,isHit,(short)0));
+          if(isHit)
+            break;
+        }
+    }
+    if(figure_type == BISHOP || figure_type == QUEEN)
+    {
+      // X       X
+      //   X   X
+      //     B
+      //   X   X
+      // X       X
+      int[][] pos = {
+          {-1,1},{-1,-1},{1,1},{1,-1}
+      };
+      for(int[] pos_i:pos)
+        for(int j = 1; true; j++)
+        {
+          temp_col = (short)(col+j*pos_i[0]);
+          temp_row = (short)(row+j*pos_i[1]);
+          if(
+            temp_col<0 || temp_col>=8 || temp_row <0 || temp_row >=8
+            || !isValidDestination(board,figure_color,temp_col,temp_row)
+          )
+            break;
+          
+          boolean isHit = (board.getFigure(temp_col,temp_row) != 0);
+          moves.add(new Move(figure_color,figure_type,col,row,temp_col,temp_row,isHit,(short)0));
+          if(isHit)
+            break;
+        }
     }
     return moves;
   }
@@ -341,10 +315,10 @@ public class Figure
           continue;
         }
         
-        ArrayList<Move> moves = getValidMoves(b, (short)i,(short)j);
-        for(int k = 0; k<moves.size(); k++)
+        LinkedList<Move> moves = getValidMoves(b, (short)i,(short)j);
+        for(Move move_k:moves)
         {
-          Move m = moves.get(k);
+          Move m = move_k;
           if(m.getIsHit() ==true && m.getDestCol() == col && m.getDestRow() == row)
             return true;
         }

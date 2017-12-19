@@ -1,6 +1,7 @@
 package chessProgram;
 
-import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 
 class Thinker implements Runnable
 {
@@ -10,6 +11,7 @@ class Thinker implements Runnable
     BlackWhite color;
     Move best_move;
     java.util.Random random;
+    int var_k = 0;
     
     /*****************************
      * Constructor
@@ -28,31 +30,62 @@ class Thinker implements Runnable
      ***************************** */
     public void run()
     {
-      int level = 3;//1;
+      int level = 4;
       while(true)
       {
-          ArrayList<Move> moves = b.getValidMoves(color);
-          int n = moves.size();
-          ArrayList<Move> temp_best_moves = new ArrayList<Move>();
-          double best_fitness = 0;
-          for(int i = 0; i< n; i++)
+        var_k = 0;
+        LinkedList<Move> moves = b.getValidMoves(color);
+        LinkedList<Move> temp_best_moves = new LinkedList<Move>();
+        double best_fitness = Double.POSITIVE_INFINITY;
+        for(Move move_i:moves)
+        {
+            Board temp = b.cloneIncompletely();//corrent information+previous move
+            temp.executeMove(move_i);
+            double q = evaluate(temp,Board.FlipColor(color), level-1,-best_fitness); //apponant color
+            //System.out.println(move_i.toString()+","+q);
+            if(temp_best_moves.size() == 0 || q<best_fitness)
+            {
+              temp_best_moves = new LinkedList<Move>();
+              temp_best_moves.add(move_i);
+              best_fitness = q;
+            }
+            else if(q == best_fitness)
+              temp_best_moves.add(move_i);
+        }
+        best_move = temp_best_moves.get(0);
+        if(temp_best_moves.size() > 1)
+        {
+          moves = temp_best_moves;
+          temp_best_moves = new LinkedList<Move>();
+          best_fitness = Double.POSITIVE_INFINITY;
+          for(Move move_i:moves)
           {
               Board temp = b.cloneIncompletely();//corrent information+previous move
-              temp.executeMove(moves.get(i));
-              double q = evaluate(temp,Board.FlipColor(color), level-1,0); //apponant color
-              if(i == 0 || q>best_fitness)
+              temp.executeMove(move_i);
+              double q = evaluate(temp,Board.FlipColor(color), 0,-best_fitness); //apponant color
+              if(q>best_fitness || temp_best_moves.size() == 0)
               {
-                temp_best_moves = new ArrayList<Move>();
-                temp_best_moves.add(moves.get(i));
+                temp_best_moves = new LinkedList<Move>();
+                temp_best_moves.add(move_i);
                 best_fitness = q;
               }
               else if(q == best_fitness)
-                temp_best_moves.add(moves.get(i));
+                temp_best_moves.add(move_i);
           }
-        
-          best_move = temp_best_moves.get(random.nextInt(temp_best_moves.size()));
-          System.out.println("level:"+level+", fit:"+best_fitness);
-          level++;
+          System.out.println("thinking...");
+          if(temp_best_moves.size() > 1)
+          {
+            best_move = temp_best_moves.get(random.nextInt(temp_best_moves.size()));
+            System.out.println("choosing a random move...");
+            for(Move move:temp_best_moves)
+              System.out.println("(*)"+(move.toString()));
+          }
+          else
+            best_move = temp_best_moves.get(0);
+        }
+        System.out.println("var_k:"+var_k);
+        System.out.println("level:"+level+", fit:"+best_fitness+", move:"+best_move.toString());
+        level++;
       }
     }
     
@@ -64,27 +97,33 @@ class Thinker implements Runnable
     {
         if(level==0)
         {
-            double myFitness = player.getFitness(b,color);
-            double oppFitness = player.getFitness(b,Board.FlipColor(color));
-            return oppFitness-myFitness;
+          var_k++;
+          double fitness = player.getFitness(b,color);
+          if(fitness > 40000)
+            return Double.POSITIVE_INFINITY;
+          else if(fitness < -40000)
+            return -Double.POSITIVE_INFINITY;
+          return fitness;
         }
         else
         {
-            ArrayList<Move> moves = b.getValidMoves(color);
-            int n = moves.size();
-            double min = 0;
-            for(int i=0; i<n;i++)
+            LinkedList<Move> moves = b.getValidMoves(color);
+            double min = Double.POSITIVE_INFINITY;
+            for(Move move_i:moves)
             {
-                Board temp = b.cloneIncompletely();
-                temp.executeMove(moves.get(i));
-                double d = evaluate(temp,Board.FlipColor(color), level-1,min);
-                if(current_min>d) //alpha-beta-search
-                {
-                  min = d;
-                  break;
-                }
-                if(d < min || i == 0)
-                  min=d;
+              Board temp = b.cloneIncompletely();
+              temp.executeMove(move_i);
+              double d = evaluate(temp,Board.FlipColor(color), level-1,-min);
+              
+              if(min == Double.POSITIVE_INFINITY)
+              {
+                min=d;
+                continue;
+              }
+              else if(d<current_min) //alpha-beta-search
+                return Double.POSITIVE_INFINITY;
+              if(d < min)
+                min=d;
             }
             return -min;
         }

@@ -1,6 +1,7 @@
 package chessProgram;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 //points on the board will be represented as [col][row]
 //
@@ -111,11 +112,14 @@ public class Board
     return new Board(this);
   }
   
-  public ArrayList<Move> getValidMoves(BlackWhite color)
+  public LinkedList<Move> getValidMoves(BlackWhite color)
   {
-    ArrayList<Move> moves = new ArrayList<Move>();
+    LinkedList<Move> moves = new LinkedList<Move>();
     if(isMat()==true)
+    {  
+      moves.add(new Move("null",this));
       return moves;
+    }
           
     for(int i = 0; i<figures.length; i++)
       for(int j = 0; j<figures.length; j++)
@@ -143,14 +147,24 @@ public class Board
    * ArrayList<Move> history = getHistory();
    * returns a clone of the history
    ***************************** */
-  public boolean executeMove(Move move) //dont validate!
+  public void executeMove(Move move) //dont validate!
   {
+    short type = move.getType();
+    if(type==0)
+      return;
+    
+    BlackWhite color = move.getColor();
+    int destCol = move.getDestCol();
+    int destRow = move.getDestRow();
+    int sourceCol = move.getSourceCol();
+    int sourceRow = move.getSourceRow();
+    
     history.add(move);
     
     //king moved -> can't Castle
-    if(move.getType() == Figure.KING)
+    if(type == Figure.KING)
     {
-      if(move.getColor()==BlackWhite.WHITE)
+      if(color==BlackWhite.WHITE)
       {
         whiteCanCastleQueenSide = false;
         whiteCanCastleKingSide = false;
@@ -166,47 +180,50 @@ public class Board
     int isCastle = move.isCastle();
     if(isCastle != 0)
     {
-      short offset = (move.getColor()==BlackWhite.WHITE) ? Figure.WHITE_OFFSET:Figure.BLACK_OFFSET;
-      figures[move.getDestCol()][move.getDestRow()] = (short)(Figure.KING+offset);
-      figures[move.getSourceCol()][move.getSourceRow()] = 0;
+      short offset = (color==BlackWhite.WHITE) ? Figure.WHITE_OFFSET:Figure.BLACK_OFFSET;
+      figures[destCol][destRow] = (short)(Figure.KING+offset);
+      figures[sourceCol][sourceRow] = 0;
       
       if(isCastle ==  1)
       {
-        figures[5][move.getDestRow()] = (short)(Figure.ROOK+offset);
-        figures[7][move.getDestRow()] = 0;
+        figures[5][destRow] = (short)(Figure.ROOK+offset);
+        figures[7][destRow] = 0;
       }
       else //if(isCastle == 2)
       {
-        figures[3][move.getDestRow()] = (short)(Figure.ROOK+offset);
-        figures[0][move.getDestRow()] = 0;
+        figures[3][destRow] = (short)(Figure.ROOK+offset);
+        figures[0][destRow] = 0;
       }
-      return true;
+      return;
     }
     
-    short fig = figures[move.getSourceCol()][move.getSourceRow()];
+    short fig = figures[sourceCol][sourceRow];
     
     short newType = move.getNewType();
     if(move.getNewType()!=0) //promoting
     {
-      if(move.getColor()==BlackWhite.WHITE)
+      if(color==BlackWhite.WHITE)
         fig = newType;
       else
         fig = (short)(newType+Figure.BLACK_OFFSET);
     }
     
     //En Passant
-    if(Figure.typeOf(fig) == Figure.PAWN && move.getIsHit() && figures[move.getDestCol()][move.getDestRow()]==0)
+    if(
+        Figure.typeOf(fig) == Figure.PAWN
+        && move.getIsHit() && figures[destCol][destRow]==0
+    )
     {
-      figures[move.getDestCol()][move.getSourceRow()] = 0;
+      figures[destCol][sourceRow] = 0;
     }
     
-    figures[move.getDestCol()][move.getDestRow()] = fig;
-    figures[move.getSourceCol()][move.getSourceRow()] = 0;
+    figures[destCol][destRow] = fig;
+    figures[sourceCol][sourceRow] = 0;
     
     //Rook moves -> cant castle
-    if(move.getType() == Figure.ROOK)
+    if(type == Figure.ROOK)
     {
-      if(move.getColor()==BlackWhite.WHITE)
+      if(color==BlackWhite.WHITE)
       {
         if(move.getSourceCol() == 0)
           whiteCanCastleQueenSide = false;
@@ -221,7 +238,7 @@ public class Board
           blackCanCastleKingSide = false;
       }
     }
-    return true;
+    return;
   }
   
   /*****************************

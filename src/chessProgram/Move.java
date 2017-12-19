@@ -1,6 +1,6 @@
 package chessProgram;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class Move
 {
@@ -21,6 +21,19 @@ public class Move
     //spliting
     //we need to split the string into the "Source" and the "Destination" part.
     //while doing so we should optain if this is a Hit or not
+    
+    if(s == "null")
+    {
+      type = 0;
+      color = BlackWhite.WHITE;
+      sourceCol = 0;
+      sourceRow = 0;
+      destCol = 0;
+      destRow = 0;
+      isHit = false;
+      newType = 0;
+      return;
+    }
     
     //isHit?
     String[] parts = s.split("-");
@@ -161,11 +174,10 @@ public class Move
    * MovesListIncludesMove(moves,move)
    * returns if moves contains move
    ***************************** */
-  //TODO:Pls delete in exercise3, if still not used.
-  public static Boolean MovesListIncludesMove(ArrayList<Move> moves, Move move)
+  public static Boolean MovesListIncludesMove(LinkedList<Move> moves, Move move)
   {
-    for(int i = 0; i < moves.size(); i++)
-      if(moves.get(i).equals(move))
+    for(Move move_i:moves)
+      if(move_i.equals(move))
         return true;
     return false;
   }

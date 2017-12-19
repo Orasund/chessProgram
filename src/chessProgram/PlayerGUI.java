@@ -10,7 +10,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class PlayerGUI extends JFrame
 {
@@ -169,7 +169,7 @@ public class PlayerGUI extends JFrame
 	  //secondClick
 	  short figureIndex = board.getFigures()[col][row];
 	  
-	  ArrayList<Move> validMoves = Figure.getValidMoves(board, sourceCol, sourceRow);
+	  LinkedList<Move> validMoves = Figure.getValidMoves(board, sourceCol, sourceRow);
 	  short newType;
 	  if((Figure.typeOf(board.getFigures()[sourceCol][sourceRow]) == Figure.PAWN) && (row == 0 || row == 7))
 	    newType = Figure.QUEEN;
